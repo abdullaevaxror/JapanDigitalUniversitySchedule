@@ -17,7 +17,8 @@ class AuthConstroller extends Controller
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' =>  'required|string|min:6'
         ]);
-        User::created($validator);
+        User::query()->create($validator);
+
         return response()->json(['message' => 'User created successfully.'], 201);
 
     }
@@ -28,9 +29,9 @@ class AuthConstroller extends Controller
             'password' => 'required|string|min:6'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $validator['email'])->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($validator['password'], $user->password)) {
             return response()->json(['message' => 'The provided credentials are incorrect'], 401);
         }
         $token = $user->createToken('my-app-token')->plainTextToken;

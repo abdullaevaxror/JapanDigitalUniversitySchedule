@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreGroupRequest;
+use App\Http\Requests\UpdateGroupRequest;
 use App\Models\Group;
 use Illuminate\Http\Request;
 
@@ -12,7 +14,7 @@ class GroupController extends Controller
     {
         $query = Group::query();
 
-        if ($request->filled('search')) {
+        if ($request->has('search')) {
             $query->where('name', 'like', '%' .  $request->get('search') . '%');
         }
 
@@ -25,18 +27,19 @@ class GroupController extends Controller
 
         return response()->json($group);
     }
-    public function show(Group $group)
+
+    public function store(StoreGroupRequest $request)
     {
-        return response()->json($group);
+        $validator = $request->validated();
+        Group::query()->create($validator);
+        return response()->json(['message' => 'Group created successfully.'], 201);
     }
 
-    public function create(Request $request,  Group $group)
+    public function update(UpdateGroupRequest $request, $group)
     {
-        $validator = $request->validate([
-            'name' => 'required',
-        ]);
+        $validator = $request->validated();
         $group->update($validator);
-        return response()->json(['message' => 'Group updated successfully.']);
+        return response()->json(['message' => 'Group updated successfully', 200]);
     }
 
     public function delete(Group $group)

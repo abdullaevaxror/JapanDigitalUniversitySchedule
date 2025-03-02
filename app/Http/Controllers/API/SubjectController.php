@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateRoleUserRequest;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,7 @@ class SubjectController extends Controller
     public function index(Request $request)
     {
         $query = Subject::query();
-        if ($request->filled('search')) {
+        if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->get('search') . '%');
         }
 
@@ -30,12 +31,19 @@ class SubjectController extends Controller
         return response()->json($subjects);
     }
 
-    public function create(Request $request, Subject $subjects)
+    public function create(Request $request)
     {
         $validator = $request->validate([
             'name' => 'required',
         ]);
-        $subjects->update($validator);
+        Subject::query()->create([$validator]);
+        return response()->json(['message' => 'Subject created successfully.']);
+    }
+
+    public function update (UpdateRoleUserRequest $request, $subject)
+    {
+        $validator = $request->validated();
+        $subject->update($validator);
         return response()->json(['message' => 'Subject updated successfully.']);
     }
 

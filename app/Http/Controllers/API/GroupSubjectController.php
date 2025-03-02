@@ -3,45 +3,41 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreGroupSubjectRequest;
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class GroupSubjectController extends Controller
 {
-    // **GET - Hammasini olish**
-    public function index()
+    public function store(StoreGroupSubjectRequest $request)
     {
-        $grooupSubjects = DB::table('group_subjects')->get();
-        return response()->json($grooupSubjects);
+        $validator = $request->validated();
+
+        $group = Group::query()->findOrFail($validator['group_id']);
+        $group->subject()->attach($validator['subject_id'], ['created_at' => now(), 'updated_at' => now()]);
+
+        return response()->json(['message' => 'Subject added to group successfully.'], 201);
     }
 
-    public function store(Request $request)
+    public function update(StoreGroupSubjectRequest $id, $request)
     {
-        $request->validate([
-            'group_id' => 'required|integer',
-            'subject_id' => 'required|integer',
-        ]);
+        $validator = $request->validated();
+        $group = Group::query()->findOrFail($id);
 
-        return response()->json(['message' => 'Group Subject added successfully.'], 201);
+        $group->subject()->detach($validator['subject_id']);
+
+        return response()->json(['message' => 'Subject update from group successfully.'], 200);
     }
 
-    public function destroy(Request $request)
+    public function destroy(string $id, Request $request)
     {
-        $request->validate([
-            'group_id' => 'required',
-            'subject_id' => 'required',
-        ]);
+        $validator = $request->validate([
+            'group_id' => 'required|exists:groups,id',
+            ]);
+            $group = Group::query()->findOrfail($validator['group_id']);
+            $group->subjects()->detach($id);
 
-        $deleted = DB::table('
-        group_subjects')
-            ->where('group_id', $request->group_id)
-            ->where('subject_id', $request->subject_id)
-            ->delete();
-
-        if ($deleted) {
-            return response()->json(['message' => 'Group Subject deleted successfully.'], 201);
-        }else{
-            return response()->json(['message' => 'Group Subject not found'], 201);
+            return response()->json(['message',  'Group delete from group successfully.'], 200);
         }
-    }
 }

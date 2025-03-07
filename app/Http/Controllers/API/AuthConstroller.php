@@ -25,7 +25,7 @@ class AuthConstroller extends Controller
     public function login(Request $request)
     {
         $validator = $request->validate([
-            'email' => 'required|string|email|max:255|exists:users,email',
+            'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6'
         ]);
 
